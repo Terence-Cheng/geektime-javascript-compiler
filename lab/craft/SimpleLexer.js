@@ -1,5 +1,7 @@
 const { TokenType } = require('./TokenType');
 const { Token } = require('./Token');
+const SimpleToken = require('./SimpleToken').default
+const SimpleTokenReader = require('./SimpleTokenReader').default
 
 const DfaState = {
   Initial: 'Initial',
@@ -12,10 +14,13 @@ const DfaState = {
   GE: 'GE',
   Assignment: 'Assignment',
   Plus: 'Plus', Minus: 'Minus', Star: 'Star', Slash: 'Slash',
+  SemiColon: 'SemiColon',
 }
 
 
-
+/*
+* 有限自动机-简单地手工词法分析器
+* */
 class SimpleLexer {
   constructor () {
     this.tokens = []; //保存解析出来的Token
@@ -23,6 +28,12 @@ class SimpleLexer {
     this.token = null; //当前正在解析的Token
   }
 
+  /**
+   * 解析字符串，形成Token。
+   * 这是一个有限状态自动机，在不同的状态中迁移。
+   * @param code
+   * @return
+   */
   tokenize (code) {
     this.tokens = [];
     const reader = code;
@@ -93,6 +104,7 @@ class SimpleLexer {
           case 'Minus':
           case 'Star':
           case 'Slash':
+          case 'SemiColon':
             state = this.initToken(ch);
             break;
           case 'IntLiteral':
@@ -115,6 +127,13 @@ class SimpleLexer {
     return new SimpleTokenReader(this.tokens);
   }
 
+  /**
+   * 有限状态机进入初始状态。
+   * 这个初始状态其实并不做停留，它马上进入其他状态。
+   * 开始解析的时候，进入初始状态；某个Token解析完毕，也进入初始状态，在这里把Token记下来，然后建立一个新的Token。
+   * @param ch
+   * @return
+   */
   initToken (ch) {
     if (this.tokenText.length) {
       this.token.text = this.tokenText;
@@ -163,6 +182,11 @@ class SimpleLexer {
       newState = DfaState.Slash;
       this.token.type = TokenType.Slash;
       this.tokenText = this.tokenText + ch;
+    } else if (ch === ';') {
+      // SemiColon
+      newState = DfaState.SemiColon;
+      this.token.type = TokenType.SemiColon;
+      this.tokenText = this.tokenText + ch;
     }
 
     return newState;
@@ -186,30 +210,42 @@ class SimpleLexer {
 /**
  * Token的一个简单实现。只有类型和文本值两个属性。
  */
-class SimpleToken extends Token {
-  constructor(props) {
-    super(props);
-    this.type = null;
-    this.text = null;
-  }
-
-  getType () {
-    return this.type;
-  }
-
-  getText () {
-    return this.text;
-  }
-}
+// class SimpleToken extends Token {
+//   constructor(props) {
+//     super(props);
+//     this.type = null;
+//     this.text = null;
+//   }
+//
+//   getType () {
+//     return this.type;
+//   }
+//
+//   getText () {
+//     return this.text;
+//   }
+// }
 
 /**
  * 一个简单的Token流。是把一个Token列表进行了封装。
  */
-class SimpleTokenReader {
-  constructor(tokens) {
-    this.tokens = tokens;
-  }
-}
+// class SimpleTokenReader {
+//   constructor(tokens) {
+//     this.tokens = tokens;
+//   }
+//   peek () {
+//     if (!this.tokens.length) {
+//       return null;
+//     }
+//     return this.tokens[0]
+//   }
+//   read () {
+//     if (!this.tokens.length) {
+//       return null;
+//     }
+//     return this.tokens.shift()
+//   }
+// }
 
 function dump(tokenReader){
   console.log("text\ttype");
@@ -236,4 +272,6 @@ function testUnit(script) {
   dump(tokenReader);
 }
 
-test();
+// test();
+
+exports.SimpleLexer = SimpleLexer

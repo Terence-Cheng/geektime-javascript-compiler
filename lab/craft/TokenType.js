@@ -6,6 +6,7 @@ const TokenType = {
   Int: 'Int',
   Assignment: 'Assignment',
   Plus: 'Plus', Minus: 'Minus', Star: 'Star', Slash: 'Slash',
+  SemiColon: 'SemiColon',
 }
 
 module.exports = {
