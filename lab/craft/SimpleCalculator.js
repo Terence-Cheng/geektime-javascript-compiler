@@ -190,6 +190,98 @@ var SimpleCalculator = /** @class */ (function () {
             _this.dumpAST(child, indent + "\t");
         });
     };
+    SimpleCalculator.prototype.printEvaluate = function (script) {
+        // try {
+        //     ASTNode tree = parse(script);
+        //
+        //     dumpAST(tree, "");
+        //     evaluate(tree, "");
+        //
+        // } catch (Exception e) {
+        //     System.out.println(e.getMessage());
+        // }
+        try {
+            var tree = this.parse(script);
+            this.dumpAST(tree, '');
+            this.evaluate(tree, '');
+        }
+        catch (e) {
+            console.error(e);
+        }
+    };
+    /**
+     * 解析脚本，并返回根节点
+     * @param code
+     * @return
+     * @throws Exception
+     */
+    SimpleCalculator.prototype.parse = function (code) {
+        // SimpleLexer lexer = new SimpleLexer();
+        // TokenReader tokens = lexer.tokenize(code);
+        //
+        // ASTNode rootNode = prog(tokens);
+        //
+        // return rootNode;
+        var lexer = new SimpleLexer_js_1.SimpleLexer();
+        var tokens = lexer.tokenize(code);
+        var rootNode = this.prog(tokens);
+        return rootNode;
+    };
+    /**
+     * 语法解析：根节点
+     * @return
+     * @throws Exception
+     */
+    SimpleCalculator.prototype.prog = function (tokens) {
+        var node = new SimpleASTNode(ASTNodeType_1.default.Programm, 'Calculator');
+        var child = this.additive(tokens);
+        if (child !== null) {
+            node.addChild(child);
+        }
+        return node;
+    };
+    SimpleCalculator.prototype.evaluate = function (node, indent) {
+        var _this = this;
+        var result = 0;
+        console.log(indent + "Calculating: " + node.getTypeValue() + '  ' + node.getText());
+        switch (node.getType()) {
+            case ASTNodeType_1.default.Programm:
+                node.getChildren().forEach(function (child) {
+                    result = _this.evaluate(child, indent + '\t');
+                });
+                break;
+            case ASTNodeType_1.default.Additive:
+                var child1 = node.getChildren()[0];
+                var value1 = this.evaluate(child1, indent + '\t');
+                var child2 = node.getChildren()[1];
+                var value2 = this.evaluate(child2, indent + '\t');
+                if (node.getText() === '+') {
+                    result = value1 + value2;
+                }
+                else {
+                    result = value1 - value2;
+                }
+                break;
+            case ASTNodeType_1.default.Multiplicative:
+                child1 = node.getChildren()[0];
+                value1 = this.evaluate(child1, indent + '\t');
+                child2 = node.getChildren()[1];
+                value2 = this.evaluate(child2, indent + '\t');
+                if (node.getText() === '*') {
+                    result = value1 * value2;
+                }
+                else {
+                    result = value1 / value2;
+                }
+                break;
+            case ASTNodeType_1.default.IntLiteral:
+                result = Number(node.getText());
+                break;
+            default:
+        }
+        console.log(indent + "Result: " + result);
+        return result;
+    };
     return SimpleCalculator;
 }());
 var SimpleASTNode = /** @class */ (function () {
@@ -233,29 +325,26 @@ function test() {
 }
 // test()
 function testSimpleCalculator() {
-    //测试变量声明语句的解析
-    // String script = "int a = b+3;";
-    // System.out.println("解析变量声明语句: " + script);
-    // SimpleLexer lexer = new SimpleLexer();
-    // TokenReader tokens = lexer.tokenize(script);
-    // try {
-    //     SimpleASTNode node = calculator.intDeclare(tokens);
-    //     calculator.dumpAST(node,"");
-    // }
-    // catch (Exception e){
-    //     System.out.println(e.getMessage());
-    // }
     var calculator = new SimpleCalculator();
+    //测试变量声明语句的解析
+    /*
     // const script:string = "int a = b+3;";
-    var script = "int age = 2 + 3 * 5;";
-    console.log("解析变量声明语句: " + script);
-    var lexer = new SimpleLexer_js_1.SimpleLexer();
-    var tokens = lexer.tokenize(script);
+    const script:string = "int age = 2 + 3 * 5;";
+    console.log("解析变量声明语句: " + script)
+    const lexer = new SimpleLexer()
+    const tokens = lexer.tokenize(script)
     try {
-        var node = calculator.intDeclare(tokens);
-        calculator.dumpAST(node, "");
-    }
-    catch (e) {
-    }
+        const node: SimpleASTNode = calculator.intDeclare(tokens);
+        calculator.dumpAST(node,"");
+    } catch (e) {
+
+    }*/
+    //测试表达式
+    var script = "2+3*5";
+    console.log("\n计算: " + script + "，看上去一切正常。");
+    calculator.printEvaluate(script);
+    script = "2+3+4";
+    console.log("\n计算: " + script + "，结合性出现错误。");
+    calculator.printEvaluate(script);
 }
 testSimpleCalculator();

@@ -198,6 +198,100 @@ class SimpleCalculator {
         })
 
     }
+
+    printEvaluate (script: string): void {
+        // try {
+        //     ASTNode tree = parse(script);
+        //
+        //     dumpAST(tree, "");
+        //     evaluate(tree, "");
+        //
+        // } catch (Exception e) {
+        //     System.out.println(e.getMessage());
+        // }
+        try {
+            const tree = this.parse(script)
+            this.dumpAST(tree, '')
+            this.evaluate(tree, '')
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    /**
+     * 解析脚本，并返回根节点
+     * @param code
+     * @return
+     * @throws Exception
+     */
+    parse (code: string): ASTNode {
+        // SimpleLexer lexer = new SimpleLexer();
+        // TokenReader tokens = lexer.tokenize(code);
+        //
+        // ASTNode rootNode = prog(tokens);
+        //
+        // return rootNode;
+        const lexer = new SimpleLexer();
+        const tokens = lexer.tokenize(code);
+        const rootNode = this.prog(tokens)
+        return rootNode
+    }
+
+    /**
+     * 语法解析：根节点
+     * @return
+     * @throws Exception
+     */
+    prog (tokens: TokenReader): SimpleASTNode {
+        const node = new SimpleASTNode(ASTNodeType.Programm, 'Calculator')
+        const child = this.additive(tokens)
+
+        if (child !== null) {
+            node.addChild(child)
+        }
+
+        return node
+    }
+
+    evaluate (node: ASTNode, indent: string): number {
+        let result = 0;
+        console.log(indent + "Calculating: " + node.getTypeValue() + '  ' + node.getText());
+        switch (node.getType()) {
+            case ASTNodeType.Programm:
+                node.getChildren().forEach(child => {
+                    result = this.evaluate(child, indent + '\t')
+                })
+                break;
+            case ASTNodeType.Additive:
+                let child1 = node.getChildren()[0]
+                let value1 = this.evaluate(child1, indent + '\t')
+                let child2 = node.getChildren()[1]
+                let value2 = this.evaluate(child2, indent + '\t')
+                if (node.getText() === '+') {
+                    result = value1 + value2
+                } else  {
+                    result = value1 - value2
+                }
+                break;
+            case ASTNodeType.Multiplicative:
+                child1 = node.getChildren()[0]
+                value1 = this.evaluate(child1, indent + '\t')
+                child2 = node.getChildren()[1]
+                value2 = this.evaluate(child2, indent + '\t')
+                if (node.getText() === '*') {
+                    result = value1 * value2
+                } else  {
+                    result = value1 / value2
+                }
+                break;
+            case ASTNodeType.IntLiteral:
+                result = Number(node.getText());
+                break;
+            default:
+        }
+        console.log(indent + "Result: " + result);
+        return result;
+    }
 }
 
 class SimpleASTNode implements ASTNode {
@@ -246,19 +340,9 @@ function test(): void {
 // test()
 
 function testSimpleCalculator() : void {
-    //测试变量声明语句的解析
-    // String script = "int a = b+3;";
-    // System.out.println("解析变量声明语句: " + script);
-    // SimpleLexer lexer = new SimpleLexer();
-    // TokenReader tokens = lexer.tokenize(script);
-    // try {
-    //     SimpleASTNode node = calculator.intDeclare(tokens);
-    //     calculator.dumpAST(node,"");
-    // }
-    // catch (Exception e){
-    //     System.out.println(e.getMessage());
-    // }
     const calculator = new SimpleCalculator()
+    //测试变量声明语句的解析
+    /*
     // const script:string = "int a = b+3;";
     const script:string = "int age = 2 + 3 * 5;";
     console.log("解析变量声明语句: " + script)
@@ -269,7 +353,17 @@ function testSimpleCalculator() : void {
         calculator.dumpAST(node,"");
     } catch (e) {
 
-    }
+    }*/
+
+    //测试表达式
+    let script = "2+3*5";
+    console.log("\n计算: " + script + "，看上去一切正常。");
+    calculator.printEvaluate(script);
+
+
+    script = "2+3+4";
+    console.log("\n计算: " + script + "，结合性出现错误。");
+    calculator.printEvaluate(script);
 }
 
 testSimpleCalculator()
