@@ -3,7 +3,7 @@ import TokenType from './TokenType_ts'
  * 一个简单的Token。
  * 只有类型和文本值两个属性。
  */
-interface Token_ts {
+interface Token {
 
     /**
      * Token的类型 字符串
@@ -25,4 +25,4 @@ interface Token_ts {
 
 }
 
-export default Token_ts
+export default Token

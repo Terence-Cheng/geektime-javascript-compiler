@@ -1,5 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var SimpleTokenReader = /** @class */ (function () {
     function SimpleTokenReader(tokens) {
         this.tokens = null;
@@ -20,4 +20,4 @@ var SimpleTokenReader = /** @class */ (function () {
     };
     return SimpleTokenReader;
 }());
-exports.default = SimpleTokenReader;
+exports["default"] = SimpleTokenReader;
